@@ -1,0 +1,32 @@
+{
+  "testSuite": "BackstopJS",
+  "tests": [
+    {
+      "pair": {
+        "reference": "..\\bitmaps_reference\\custom_test_Custom_Test_0_document_0_desktop.png",
+        "test": "..\\bitmaps_test\\20250218-131318\\custom_test_Custom_Test_0_document_0_desktop.png",
+        "selector": "document",
+        "fileName": "custom_test_Custom_Test_0_document_0_desktop.png",
+        "label": "Custom Test",
+        "requireSameDimensions": true,
+        "misMatchThreshold": 0.1,
+        "url": "http://redmijnpc.com",
+        "expect": 0,
+        "viewportLabel": "desktop",
+        "diff": {
+          "isSameDimensions": false,
+          "dimensionDifference": {
+            "width": 0,
+            "height": 155
+          },
+          "rawMisMatchPercentage": 7.9984567901234565,
+          "misMatchPercentage": "8.00",
+          "analysisTime": 753
+        },
+        "diffImage": "..\\bitmaps_test\\20250218-131318\\failed_diff_custom_test_Custom_Test_0_document_0_desktop.png"
+      },
+      "status": "fail"
+    }
+  ],
+  "id": "custom_test"
+}
