@@ -44,12 +44,11 @@ app.post('/api/v1/:command', async (req, res) => {
     };
 
     const result = await runBackstop(command, backstopConfig);
-    //add the filename of the generated result to the result object
-    result.filename = `192.168.10.45:3000/report/`;
     res.json(result);
 });
 
 app.get('/:file', (req, res) => {
+    console.log(`SENDING: ${process.cwd()}/${req.params.file}`);
     res.sendFile(`${process.cwd()}/${req.params.file}`);
 });
 
