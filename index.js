@@ -16,9 +16,8 @@ const runBackstop = async (command, config) => {
     }
 };
 
-app.get('/report/:id', (req, res) => {
-    const { id } = req.params;
-    res.sendFile(`${process.cwd()}/backstop_data/html_report/${id}/index.html`);
+app.get('/report', (req, res) => {
+    res.sendFile(`${process.cwd()}/backstop_data/html_report/index.html`);
 });
 
 app.post('/:command', async (req, res) => {
@@ -50,7 +49,7 @@ app.post('/:command', async (req, res) => {
 
     const result = await runBackstop(command, backstopConfig);
     //add the filename of the generated result to the result object
-    result.filename = `192.168.10.45:3000/report/${backstopConfig.id}`;
+    result.filename = `192.168.10.45:3000/report/`;
     res.json(result);
 });
 
