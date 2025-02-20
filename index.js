@@ -50,7 +50,7 @@ app.post('/api/v1/:command', async (req, res) => {
 });
 
 app.get('/:file', (req, res) => {
-    res.sendFile(`${process.cwd()}/backstop_data/html_report/${req.params.file}`);
+    res.sendFile(`${process.cwd()}/${req.params.file}`);
 });
 
 app.listen(3000, () => {
