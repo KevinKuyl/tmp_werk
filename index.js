@@ -16,10 +16,6 @@ const runBackstop = async (command, config) => {
     }
 };
 
-app.get('/report', (req, res) => {
-    res.sendFile(`${process.cwd()}/backstop_data/html_report/index.html`);
-});
-
 app.post('/api/v1/:command', async (req, res) => {
     const { command } = req.params;
     const { url, config } = req.body;
