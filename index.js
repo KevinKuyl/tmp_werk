@@ -47,10 +47,7 @@ app.post('/api/v1/:command', async (req, res) => {
     res.json(result);
 });
 
-app.get('/:file', (req, res) => {
-    console.log(`SENDING: ${process.cwd()}/${req.params.file}`);
-    res.sendFile(`${process.cwd()}/${req.params.file}`);
-});
+app.use('/reports', express.static('backstop_data/'));
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
