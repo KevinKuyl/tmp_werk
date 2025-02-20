@@ -16,10 +16,6 @@ const runBackstop = async (command, config) => {
     }
 };
 
-app.get('/:file', (req, res) => {
-    res.sendFile(`${process.cwd()}/backstop_data/html_report/${req.params.file}`);
-});
-
 app.get('/report', (req, res) => {
     res.sendFile(`${process.cwd()}/backstop_data/html_report/index.html`);
 });
@@ -55,6 +51,10 @@ app.post('/api/v1/:command', async (req, res) => {
     //add the filename of the generated result to the result object
     result.filename = `192.168.10.45:3000/report/`;
     res.json(result);
+});
+
+app.get('/:file', (req, res) => {
+    res.sendFile(`${process.cwd()}/backstop_data/html_report/${req.params.file}`);
 });
 
 app.listen(3000, () => {
