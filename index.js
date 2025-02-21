@@ -43,6 +43,8 @@ app.post('/api/v1/:command', async (req, res) => {
     const { command } = req.params;
     const { url, config } = req.body;
 
+    console.log(req.body);
+
     if (!['test', 'reference', 'approve', 'report'].includes(command)) {
         return res.status(400).json({ success: false, message: 'Invalid command' });
     }
