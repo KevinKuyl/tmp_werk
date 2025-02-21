@@ -7,6 +7,27 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+const defaultConfig = {
+    viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
+    scenarios: [{
+        label: 'Custom Test',
+        url: 'http://google.com',  // default fallback
+        selectors: ['document'],
+        delay: 5000
+    }],
+    paths: {
+        bitmaps_reference: 'backstop_data/bitmaps_reference',
+        bitmaps_test: 'backstop_data/bitmaps_test'
+    },
+    report: ['browser'],
+    engine: 'puppeteer',
+    engineOptions: {
+        args: ['--no-sandbox', '--font-render-hinting=none']
+    },
+    asyncCaptureLimit: 5,
+    asyncCompareLimit: 50,
+};
+
 const runBackstop = async (command, config) => {
     try {
         await backstop(command, { config });
@@ -16,32 +37,23 @@ const runBackstop = async (command, config) => {
     }
 };
 
+
+
 app.post('/api/v1/:command', async (req, res) => {
     const { command } = req.params;
     const { url, config } = req.body;
-    
+
     if (!['test', 'reference', 'approve', 'report'].includes(command)) {
         return res.status(400).json({ success: false, message: 'Invalid command' });
     }
 
-    const backstopConfig = config || {
-        id: 'custom_test',
-        viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
-        scenarios: [{
-            label: 'Custom Test',
-            url: url || 'http://google.com',
-            selectors: ['document'],
-            delay: 5000
-        }],
-        paths: { bitmaps_reference: 'backstop_data/bitmaps_reference', bitmaps_test: 'backstop_data/bitmaps_test' },
-        report: ['browser'],
-        engine: 'puppeteer',
-        engineOptions: { 
-            args: ['--no-sandbox', '--font-render-hinting=none'] // Add this option
-        },
-        asyncCaptureLimit: 5,
-        asyncCompareLimit: 50,
-    };
+    const backstopConfig = {
+        ...defaultConfig,
+        ...config,
+        // Ensure nested objects are merged if provided
+        viewports: (config && config.viewports) || defaultConfig.viewports,
+        scenarios: (config && config.scenarios) || defaultConfig.scenarios,
+      };
 
     const result = await runBackstop(command, backstopConfig);
     res.json(result);
