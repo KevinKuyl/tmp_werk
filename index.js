@@ -1,4 +1,5 @@
 import https from 'https';
+import fs from 'fs';
 import express from 'express';
 import backstop from 'backstopjs';
 import bodyParser from 'body-parser';
