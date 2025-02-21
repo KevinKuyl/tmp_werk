@@ -4,8 +4,25 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 const app = express();
-app.options('*', cors()); // Enable CORS for pre-flight requests
-app.use(cors());
+
+// Define the allowed origins (you can customize this list)
+const allowedOrigins = ['http://frontend1.com', 'http://frontend2.com'];  // Add your frontend server URLs here
+
+// CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {  // Allow no origin (for non-browser requests like Postman)
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
+  credentials: true  // Allow credentials like cookies
+};
+
+// Apply CORS middleware globally
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 const defaultConfig = {
