@@ -10,13 +10,6 @@ const allowedOrigins = ['http://frontend1.com', 'http://frontend2.com'];  // Add
 
 // CORS configuration
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {  // Allow no origin (for non-browser requests like Postman)
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
   credentials: true  // Allow credentials like cookies
 };
