@@ -5,14 +5,9 @@ import cors from 'cors';
 
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
-};
-
 // Apply CORS middleware globally
-app.use(cors(corsOptions));
+app.options('*', cors());  // This allows all OPTIONS requests to pass through with CORS headers
+app.use(cors());
 app.use(bodyParser.json());
 
 const defaultConfig = {
