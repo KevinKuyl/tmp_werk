@@ -10,6 +10,13 @@ const app = express();
 // Apply CORS middleware globally
 app.options('*', cors());  // This allows all OPTIONS requests to pass through with CORS headers
 app.use(cors());
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');  
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    next();
+});
 app.use(bodyParser.json());
 
 const defaultConfig = {
