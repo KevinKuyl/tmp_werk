@@ -4,7 +4,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 const app = express();
-app.use(cors());
+const allowedOrigins = ['http://robinkrooshof-api-test.nl/', 'http://robinkrooshof-api.nl/'];
+
+app.use(cors({
+  origin: allowedOrigins
+}));
+
 app.use(bodyParser.json());
 
 const defaultConfig = {
