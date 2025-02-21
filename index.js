@@ -74,4 +74,6 @@ app.use('/reports', express.static('backstop_data/'));
 https.createServer({
     key: fs.readFileSync('server.key'),
     cert: fs.readFileSync('server.cert')
-}, app)
+}, app).listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
