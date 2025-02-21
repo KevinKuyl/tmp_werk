@@ -5,13 +5,11 @@ import cors from 'cors';
 
 const app = express();
 
-// Define the allowed origins (you can customize this list)
-const allowedOrigins = ['http://frontend1.com', 'http://frontend2.com'];  // Add your frontend server URLs here
-
 // CORS configuration
 const corsOptions = {
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
-  credentials: true  // Allow credentials like cookies
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
+    credentials: true  // Allow credentials like cookies
 };
 
 // Apply CORS middleware globally
@@ -66,7 +64,7 @@ app.post('/api/v1/:command', async (req, res) => {
         // Ensure nested objects are merged if provided
         viewports: (config && config.viewports) || defaultConfig.viewports,
         scenarios: (config && config.scenarios) || defaultConfig.scenarios,
-      };
+    };
 
     const result = await runBackstop(command, backstopConfig);
     res.json(result);
