@@ -4,12 +4,8 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 
 const app = express();
-const allowedOrigins = ['http://robinkrooshof-api-test.nl/', 'http://robinkrooshof-api.nl/'];
-
-app.use(cors({
-  origin: allowedOrigins
-}));
-
+app.options('*', cors()); // Enable CORS for pre-flight requests
+app.use(cors());
 app.use(bodyParser.json());
 
 const defaultConfig = {
