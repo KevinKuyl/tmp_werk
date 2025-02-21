@@ -9,7 +9,6 @@ const app = express();
 const corsOptions = {
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
-    credentials: true  // Allow credentials like cookies
 };
 
 // Apply CORS middleware globally
