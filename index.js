@@ -1,3 +1,4 @@
+import https from 'https';
 import express from 'express';
 import backstop from 'backstopjs';
 import bodyParser from 'body-parser';
@@ -66,6 +67,11 @@ app.post('/api/v1/:command', async (req, res) => {
 
 app.use('/reports', express.static('backstop_data/'));
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
-});
+// app.listen(3000, () => {
+//     console.log('Server is running on port 3000');
+// });
+
+https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+}, app)
