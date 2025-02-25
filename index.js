@@ -6,21 +6,33 @@ import bodyParser from 'body-parser';
 import puppeteer from 'puppeteer';
 import url from 'url';
 import cors from 'cors';
-
+import { connect } from 'http2';
+const mysql = require('mysql2/promise');
 const app = express();
 
 // Apply CORS middleware globally
 app.options('*', cors());  // This allows all OPTIONS requests to pass through with CORS headers
 app.use(cors());
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');  
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Access-Control-Allow-Private-Network', 'true');
     next();
 });
 app.use(bodyParser.json());
 
+async function connectToDatabase() {
+    const connection = await mysql.createConnection({
+        host: 'your-mysql-host',
+        user: 'your-mysql-user',
+        password: 'your-mysql-password',
+        database: 'your-database-name'
+    });
+
+    console.log('Connected to MySQL');
+    return connection;
+}
 const defaultConfig = {
     viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
     scenarios: [{
@@ -55,7 +67,7 @@ async function crawl(domain, startPath = '/', visited = new Set()) {
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const baseURL = new URL(domain);
-    
+
     async function visitPage(path) {
         const fullUrl = new URL(path, domain).href;
         if (visited.has(fullUrl)) return;
@@ -68,7 +80,7 @@ async function crawl(domain, startPath = '/', visited = new Set()) {
                 Array.from(document.querySelectorAll('a'))
                     .map(a => a.href)
             );
-            
+
             for (const link of links) {
                 const parsedLink = new URL(link, domain);
                 if (parsedLink.origin === baseURL.origin) {
@@ -79,47 +91,68 @@ async function crawl(domain, startPath = '/', visited = new Set()) {
             console.error(`Error visiting ${fullUrl}:`, err.message);
         }
     }
-    
+
     await visitPage(startPath);
     await browser.close();
     return [...visited];
 }
 
-app.post('/api/v1/:command', async (req, res) => {
-    const { command } = req.params;
-    const { url, config } = req.body;
+connectToDatabase().then(connection => {
 
-    console.log(req.body);
+    app.post('/api/v1/:command', async (req, res) => {
+        const { command } = req.params;
+        const { url, config } = req.body;
 
-    if (['test', 'reference', 'approve', 'report'].includes(command)) {
-        const backstopConfig = {
-            ...defaultConfig,
-            ...config,
-            // Ensure nested objects are merged if provided
-            viewports: (config && config.viewports) || defaultConfig.viewports,
-            scenarios: (config && config.scenarios) || defaultConfig.scenarios,
-        };
-    
-        const result = await runBackstop(command, backstopConfig);
-        res.json(result);
-    }
+        console.log(req.body);
 
-    if (command === 'crawl') {
-        const domain = url || 'www.google.com'; // Replace with your target domain
-        const urls = await crawl(domain);
-        res.json({ success: true, urls });
-    }
-});
+        if (['test', 'reference', 'approve', 'report'].includes(command)) {
+            const backstopConfig = {
+                ...defaultConfig,
+                ...config,
+                // Ensure nested objects are merged if provided
+                viewports: (config && config.viewports) || defaultConfig.viewports,
+                scenarios: (config && config.scenarios) || defaultConfig.scenarios,
+            };
 
-app.use('/reports', express.static('backstop_data/'));
+            const result = await runBackstop(command, backstopConfig);
+            res.json(result);
+        }
 
-// app.listen(3000, () => {
-//     console.log('Server is running on port 3000');
-// });
+        if (command === 'crawl') {
+            const domain = url || 'www.google.com'; // Replace with your target domain
+            const urls = await crawl(domain);
+            res.json({ success: true, urls });
+        }
+    });
 
-https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-}, app).listen(3000, () => {
-    console.log('Server is running on port 3000');
+    app.get('/api/customers/', async (req, res) => {
+        const [results] = await connection.execute(
+            'SELECT * FROM websites'
+        );
+        res.json({ success: true, results });
+    });
+
+    app.get('/api/customers/:id', async (req, res) => {
+        const { id } = req.params;
+        const [results] = await connection.execute(
+            'SELECT * FROM websites WHERE klantnummer = ?', [id]
+        );
+        const [scenarios] = await connection.execute(
+            'SELECT * FROM urls WHERE websiteid = ?', [id]
+        );
+        res.json({ success: true, results, scenarios });
+    });
+
+    app.use('/reports', express.static('backstop_data/'));
+
+    // app.listen(3000, () => {
+    //     console.log('Server is running on port 3000');
+    // });
+
+    https.createServer({
+        key: fs.readFileSync('server.key'),
+        cert: fs.readFileSync('server.cert')
+    }, app).listen(3000, () => {
+        console.log('Server is running on port 3000');
+    });
 });
