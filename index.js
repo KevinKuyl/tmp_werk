@@ -3,6 +3,8 @@ import fs from 'fs';
 import express from 'express';
 import backstop from 'backstopjs';
 import bodyParser from 'body-parser';
+import puppeteer from 'puppeteer';
+import url from 'url';
 import cors from 'cors';
 
 const app = express();
@@ -49,7 +51,39 @@ const runBackstop = async (command, config) => {
     }
 };
 
+async function crawl(domain, startPath = '/', visited = new Set()) {
+    const browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    const baseURL = new URL(domain);
+    
+    async function visitPage(path) {
+        const fullUrl = new URL(path, domain).href;
+        if (visited.has(fullUrl)) return;
+        visited.add(fullUrl);
+        console.log(`Visiting: ${fullUrl}`);
 
+        try {
+            await page.goto(fullUrl, { waitUntil: 'domcontentloaded' });
+            const links = await page.evaluate(() =>
+                Array.from(document.querySelectorAll('a'))
+                    .map(a => a.href)
+            );
+            
+            for (const link of links) {
+                const parsedLink = new URL(link, domain);
+                if (parsedLink.origin === baseURL.origin) {
+                    await visitPage(parsedLink.pathname);
+                }
+            }
+        } catch (err) {
+            console.error(`Error visiting ${fullUrl}:`, err.message);
+        }
+    }
+    
+    await visitPage(startPath);
+    await browser.close();
+    return [...visited];
+}
 
 app.post('/api/v1/:command', async (req, res) => {
     const { command } = req.params;
@@ -57,20 +91,26 @@ app.post('/api/v1/:command', async (req, res) => {
 
     console.log(req.body);
 
-    if (!['test', 'reference', 'approve', 'report'].includes(command)) {
+    if (['test', 'reference', 'approve', 'report'].includes(command)) {
         return res.status(400).json({ success: false, message: 'Invalid command' });
+        const backstopConfig = {
+            ...defaultConfig,
+            ...config,
+            // Ensure nested objects are merged if provided
+            viewports: (config && config.viewports) || defaultConfig.viewports,
+            scenarios: (config && config.scenarios) || defaultConfig.scenarios,
+        };
+    
+        const result = await runBackstop(command, backstopConfig);
+        res.json(result);
     }
 
-    const backstopConfig = {
-        ...defaultConfig,
-        ...config,
-        // Ensure nested objects are merged if provided
-        viewports: (config && config.viewports) || defaultConfig.viewports,
-        scenarios: (config && config.scenarios) || defaultConfig.scenarios,
-    };
+    if (command === 'crawl') {
+        const domain = url || 'www.google.com'; // Replace with your target domain
+        const urls = await crawl(domain);
+        res.json({ success: true, urls });
+    }
 
-    const result = await runBackstop(command, backstopConfig);
-    res.json(result);
 });
 
 app.use('/reports', express.static('backstop_data/'));
