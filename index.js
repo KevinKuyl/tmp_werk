@@ -92,7 +92,6 @@ app.post('/api/v1/:command', async (req, res) => {
     console.log(req.body);
 
     if (['test', 'reference', 'approve', 'report'].includes(command)) {
-        return res.status(400).json({ success: false, message: 'Invalid command' });
         const backstopConfig = {
             ...defaultConfig,
             ...config,
@@ -110,7 +109,6 @@ app.post('/api/v1/:command', async (req, res) => {
         const urls = await crawl(domain);
         res.json({ success: true, urls });
     }
-
 });
 
 app.use('/reports', express.static('backstop_data/'));
