@@ -8,6 +8,9 @@ import url from 'url';
 import cors from 'cors';
 import { connect } from 'http2';
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+
+dotenv.config();
 const app = express();
 
 // Apply CORS middleware globally
@@ -24,10 +27,10 @@ app.use(bodyParser.json());
 
 async function connectToDatabase() {
     const connection = await mysql.createConnection({
-        host: 'your-mysql-host',
-        user: 'your-mysql-user',
-        password: 'your-mysql-password',
-        database: 'your-database-name'
+        host: process.env['MYSQL_HOST'],
+        user: process.env['MYSQL_USER'],
+        password: process.env['MYSQL_PASSWORD'],
+        database: process.env['MYSQL_DATABASE']
     });
 
     console.log('Connected to MySQL');
