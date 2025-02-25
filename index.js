@@ -7,7 +7,7 @@ import puppeteer from 'puppeteer';
 import url from 'url';
 import cors from 'cors';
 import { connect } from 'http2';
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 const app = express();
 
 // Apply CORS middleware globally
