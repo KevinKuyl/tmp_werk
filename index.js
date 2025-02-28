@@ -26,7 +26,7 @@ const defaultConfig = {
     viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
     scenarios: [{
         label: 'Custom Test',
-        url: 'http://google.com',  // default fallback
+        url: 'http://google.com',
         selectors: ['document'],
         delay: 5000
     }],
@@ -112,24 +112,6 @@ app.post('/api/v1/:command', async (req, res) => {
     }
 });
 
-app.get('/api/customers/', async (req, res) => {
-    const [results] = await connection.execute(
-        'SELECT * FROM websites'
-    );
-    res.json({ success: true, results });
-});
-
-app.get('/api/customers/:id', async (req, res) => {
-    const { id } = req.params;
-    const [results] = await connection.execute(
-        'SELECT * FROM websites WHERE klantnummer = ?', [id]
-    );
-    const [scenarios] = await connection.execute(
-        'SELECT * FROM urls WHERE websiteid = ?', [id]
-    );
-    res.json({ success: true, results, scenarios });
-});
-
 app.use('/reports', express.static('backstop_data/'));
 
 // app.listen(3000, () => {
@@ -137,8 +119,8 @@ app.use('/reports', express.static('backstop_data/'));
 // });
 
 https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
+    key: fs.readFileSync('~/vergelijk-tool/server.key'),
+    cert: fs.readFileSync('~/vergelijk-tool/server.cert')
 }, app).listen(3000, () => {
     console.log('Server is running on port 3000');
 });
