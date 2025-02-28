@@ -4,9 +4,7 @@ import express from 'express';
 import backstop from 'backstopjs';
 import bodyParser from 'body-parser';
 import puppeteer from 'puppeteer';
-import url from 'url';
 import cors from 'cors';
-import { connect } from 'http2';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
@@ -25,17 +23,6 @@ app.use((req, res, next) => {
 });
 app.use(bodyParser.json());
 
-async function connectToDatabase() {
-    const connection = await mysql.createConnection({
-        host: process.env['MYSQL_HOST'],
-        user: process.env['MYSQL_USER'],
-        password: process.env['MYSQL_PASSWORD'],
-        database: process.env['MYSQL_DATABASE']
-    });
-
-    console.log('Connected to MySQL');
-    return connection;
-}
 const defaultConfig = {
     viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
     scenarios: [{
@@ -100,62 +87,59 @@ async function crawl(domain, startPath = '/', visited = new Set()) {
     return [...visited];
 }
 
-connectToDatabase().then(connection => {
+app.post('/api/v1/:command', async (req, res) => {
+    const { command } = req.params;
+    const { url, config } = req.body;
 
-    app.post('/api/v1/:command', async (req, res) => {
-        const { command } = req.params;
-        const { url, config } = req.body;
+    console.log(req.body);
 
-        console.log(req.body);
+    if (['test', 'reference', 'approve', 'report'].includes(command)) {
+        const backstopConfig = {
+            ...defaultConfig,
+            ...config,
+            // Ensure nested objects are merged if provided
+            viewports: (config && config.viewports) || defaultConfig.viewports,
+            scenarios: (config && config.scenarios) || defaultConfig.scenarios,
+        };
 
-        if (['test', 'reference', 'approve', 'report'].includes(command)) {
-            const backstopConfig = {
-                ...defaultConfig,
-                ...config,
-                // Ensure nested objects are merged if provided
-                viewports: (config && config.viewports) || defaultConfig.viewports,
-                scenarios: (config && config.scenarios) || defaultConfig.scenarios,
-            };
+        const result = await runBackstop(command, backstopConfig);
+        res.json(result);
+    }
 
-            const result = await runBackstop(command, backstopConfig);
-            res.json(result);
-        }
+    if (command === 'crawl') {
+        const domain = url || 'www.google.com'; // Replace with your target domain
+        const urls = await crawl(domain);
+        res.json({ success: true, urls });
+    }
+});
 
-        if (command === 'crawl') {
-            const domain = url || 'www.google.com'; // Replace with your target domain
-            const urls = await crawl(domain);
-            res.json({ success: true, urls });
-        }
-    });
+app.get('/api/customers/', async (req, res) => {
+    const [results] = await connection.execute(
+        'SELECT * FROM websites'
+    );
+    res.json({ success: true, results });
+});
 
-    app.get('/api/customers/', async (req, res) => {
-        const [results] = await connection.execute(
-            'SELECT * FROM websites'
-        );
-        res.json({ success: true, results });
-    });
+app.get('/api/customers/:id', async (req, res) => {
+    const { id } = req.params;
+    const [results] = await connection.execute(
+        'SELECT * FROM websites WHERE klantnummer = ?', [id]
+    );
+    const [scenarios] = await connection.execute(
+        'SELECT * FROM urls WHERE websiteid = ?', [id]
+    );
+    res.json({ success: true, results, scenarios });
+});
 
-    app.get('/api/customers/:id', async (req, res) => {
-        const { id } = req.params;
-        const [results] = await connection.execute(
-            'SELECT * FROM websites WHERE klantnummer = ?', [id]
-        );
-        const [scenarios] = await connection.execute(
-            'SELECT * FROM urls WHERE websiteid = ?', [id]
-        );
-        res.json({ success: true, results, scenarios });
-    });
+app.use('/reports', express.static('backstop_data/'));
 
-    app.use('/reports', express.static('backstop_data/'));
+// app.listen(3000, () => {
+//     console.log('Server is running on port 3000');
+// });
 
-    // app.listen(3000, () => {
-    //     console.log('Server is running on port 3000');
-    // });
-
-    https.createServer({
-        key: fs.readFileSync('server.key'),
-        cert: fs.readFileSync('server.cert')
-    }, app).listen(3000, () => {
-        console.log('Server is running on port 3000');
-    });
+https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+}, app).listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
