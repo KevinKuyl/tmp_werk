@@ -119,8 +119,8 @@ app.use('/reports', express.static('backstop_data/'));
 // });
 
 https.createServer({
-    key: fs.readFileSync('~/vergelijk-tool/server.key'),
-    cert: fs.readFileSync('~/vergelijk-tool/server.cert')
+    key: fs.readFileSync('/home/redmijnpc/vergelijk-tool/server.key'),
+    cert: fs.readFileSync('/home/redmijnpc/vergelijk-tool/server.cert')
 }, app).listen(3000, () => {
     console.log('Server is running on port 3000');
 });
