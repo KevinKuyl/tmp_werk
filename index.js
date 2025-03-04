@@ -18,6 +18,9 @@ app.use(cors({
     allowedHeaders: 'Content-Type,Authorization',
     credentials: true
 }));
+
+app.use(bodyParser.json());
+
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -25,7 +28,6 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Private-Network', 'true');
     next();
 });
-app.use(bodyParser.json());
 
 const defaultConfig = {
     viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
