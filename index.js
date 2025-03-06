@@ -22,14 +22,14 @@ app.options('*', cors());
 
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Private-Network', 'true');
-    res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
-    next();
-});
+// app.use((req, res, next) => {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+//     res.setHeader('Access-Control-Allow-Private-Network', 'true');
+//     res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+//     next();
+// });
 
 const defaultConfig = {
     viewports: [{ label: 'desktop', width: 1920, height: 1080 }],
